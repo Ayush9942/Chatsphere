@@ -37,23 +37,10 @@ const sendMessage =
 const messages =
     document.getElementById("messages");
 
+const SERVER_URL = "wss://chatsphere-server.ayushranjan1492008.workers.dev";
 
-// =========================
-// CREATE ROOM
-// =========================
-
-createRoom.addEventListener("click", () => {
-
-    const code = Math.random()
-        .toString(36)
-        .substring(2, 8)
-        .toUpperCase();
-
-    generatedCode.textContent = code;
-
-    roomContainer.style.display = "block";
-});
-
+let socket = null;
+let currentRoom = null;
 
 // =========================
 // COPY CODE
@@ -76,13 +63,33 @@ copyCode.addEventListener("click", async () => {
 });
 
 
+
 // =========================
-// ENTER CREATED ROOM
+// CREATE ROOM
+// =========================
+
+createRoom.addEventListener("click", () => {
+
+    const code = Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase();
+
+    generatedCode.textContent = code;
+
+    roomContainer.style.display = "block";
+});
+
+
+// =========================
+// ENTER ROOM
 // =========================
 
 enterRoom.addEventListener("click", () => {
 
-    openChat();
+    const code = generatedCode.textContent;
+
+    openChat(code);
 
 });
 
@@ -103,7 +110,7 @@ joinRoom.addEventListener("click", () => {
         return;
     }
 
-    openChat();
+    openChat(code);
 
 });
 
@@ -112,13 +119,15 @@ joinRoom.addEventListener("click", () => {
 // OPEN CHAT
 // =========================
 
-function openChat() {
+function openChat(roomCodeValue) {
 
     connectionScreen.style.display = "none";
 
     chatScreen.style.display = "flex";
 
     messageInput.focus();
+
+    connectToServer(roomCodeValue);
 
 }
 
@@ -196,3 +205,51 @@ messageInput.addEventListener(
 
     }
 );
+
+// ==================
+// connecting to WebSocket
+//=====≈===============
+
+
+
+function connectToServer(roomCode) {
+    currentRoom = roomCode;
+
+    socket = new WebSocket(
+        `${SERVER_URL}/room/${roomCode}`
+    );
+
+    socket.onopen = () => {
+        console.log("✅ Connected to ChatSphere server");
+
+        if (connectionStatus) {
+            connectionStatus.textContent = "🟢 Connected";
+        }
+    };
+
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        console.log("📩 Server:", data);
+
+        if (data.type === "connected") {
+            console.log("Room connected:", currentRoom);
+        }
+
+        if (data.type === "peer-left") {
+            console.log("The other user left the room");
+        }
+    };
+
+    socket.onerror = (error) => {
+        console.error("❌ WebSocket error:", error);
+    };
+
+    socket.onclose = () => {
+        console.log("🔴 Server connection closed");
+
+        if (connectionStatus) {
+            connectionStatus.textContent = "🔴 Disconnected";
+        }
+    };
+}
