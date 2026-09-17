@@ -42,6 +42,25 @@ const SERVER_URL = "wss://chatsphere-server.ayushranjan1492008.workers.dev";
 let socket = null;
 let currentRoom = null;
 
+
+
+
+// =========================
+// CREATE ROOM
+// =========================
+
+createRoom.addEventListener("click", () => {
+
+    const code = Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase();
+
+    generatedCode.textContent = code;
+
+    roomContainer.style.display = "block";
+});
+
 // =========================
 // COPY CODE
 // =========================
@@ -60,24 +79,6 @@ copyCode.addEventListener("click", async () => {
 
     }, 1500);
 
-});
-
-
-
-// =========================
-// CREATE ROOM
-// =========================
-
-createRoom.addEventListener("click", () => {
-
-    const code = Math.random()
-        .toString(36)
-        .substring(2, 8)
-        .toUpperCase();
-
-    generatedCode.textContent = code;
-
-    roomContainer.style.display = "block";
 });
 
 
