@@ -1,3 +1,7 @@
+// =========================
+// ELEMENTS
+// =========================
+
 const connectionScreen =
     document.getElementById("connectionScreen");
 
@@ -37,12 +41,19 @@ const sendMessage =
 const messages =
     document.getElementById("messages");
 
-const SERVER_URL = "wss://chatsphere-server.ayushranjan1492008.workers.dev";
+const connectionStatus =
+    document.getElementById("connectionStatus");
+
+
+// =========================
+// WEBSOCKET
+// =========================
+
+const SERVER_URL =
+    "wss://chatsphere-server.ayushranjan1492008.workers.dev";
 
 let socket = null;
 let currentRoom = null;
-
-
 
 
 // =========================
@@ -59,7 +70,9 @@ createRoom.addEventListener("click", () => {
     generatedCode.textContent = code;
 
     roomContainer.style.display = "block";
+
 });
+
 
 // =========================
 // COPY CODE
@@ -67,17 +80,27 @@ createRoom.addEventListener("click", () => {
 
 copyCode.addEventListener("click", async () => {
 
-    const code = generatedCode.textContent;
+    const code =
+        generatedCode.textContent;
 
-    await navigator.clipboard.writeText(code);
+    try {
 
-    copyCode.textContent = "Copied!";
+        await navigator.clipboard.writeText(code);
 
-    setTimeout(() => {
+        copyCode.textContent = "Copied!";
 
-        copyCode.textContent = "Copy";
+        setTimeout(() => {
+            copyCode.textContent = "Copy";
+        }, 1500);
 
-    }, 1500);
+    } catch (error) {
+
+        console.error(
+            "Failed to copy room code:",
+            error
+        );
+
+    }
 
 });
 
@@ -88,7 +111,16 @@ copyCode.addEventListener("click", async () => {
 
 enterRoom.addEventListener("click", () => {
 
-    const code = generatedCode.textContent;
+    const code =
+        generatedCode.textContent.trim();
+
+    if (code === "") {
+
+        alert("Please create a room first.");
+
+        return;
+
+    }
 
     openChat(code);
 
@@ -109,6 +141,7 @@ joinRoom.addEventListener("click", () => {
         alert("Please enter a room code.");
 
         return;
+
     }
 
     openChat(code);
@@ -143,6 +176,11 @@ backButton.addEventListener("click", () => {
 
     connectionScreen.style.display = "block";
 
+    if (socket) {
+        socket.close();
+        socket = null;
+    }
+
 });
 
 
@@ -152,36 +190,58 @@ backButton.addEventListener("click", () => {
 
 function send() {
 
-    const text = messageInput.value.trim();
+    const text =
+        messageInput.value.trim();
 
     if (text === "") {
         return;
     }
-// make sure websocket is connected 
-  if(!socket||socket.readyState !==WebSocket.OPEN){
-    alert("Not connected to room.");
-    return;
-  }
 
-  //send message to cloudflare worker 
-  socket.send(JSON.stringify({
-    type:"message"
-    text:text
-  }));
 
-//show message on our own screen 
+    // Make sure WebSocket is connected
+
+    if (
+        !socket ||
+        socket.readyState !== WebSocket.OPEN
+    ) {
+
+        alert("Not connected to room.");
+
+        return;
+
+    }
+
+
+    // Send message to Cloudflare Worker
+
+    socket.send(JSON.stringify({
+
+        type: "message",
+        text: text
+
+    }));
+
+
+    // Show message on our own screen
 
     const message =
         document.createElement("div");
 
-    message.className = "message sent";
+    message.className =
+        "message sent";
 
-    message.textContent = text;
+    message.textContent =
+        text;
 
     messages.appendChild(message);
 
 
+    // Clear input
+
     messageInput.value = "";
+
+
+    // Scroll down
 
     messages.scrollTop =
         messages.scrollHeight;
@@ -218,77 +278,139 @@ messageInput.addEventListener(
     }
 );
 
-// ==================
-// connecting to WebSocket
-//=====≈===============
 
+// =========================
+// CONNECT TO WEBSOCKET
+// =========================
 
+function connectToServer(roomCodeValue) {
 
-function connectToServer(roomCode) {
-    currentRoom = roomCode;
+    currentRoom =
+        roomCodeValue;
 
     socket = new WebSocket(
-        `${SERVER_URL}/room/${roomCode}`
+        `${SERVER_URL}/room/${roomCodeValue}`
     );
 
+
+    // =========================
+    // CONNECTED
+    // =========================
+
     socket.onopen = () => {
-        console.log("✅ Connected to ChatSphere server");
+
+        console.log(
+            "✅ Connected to ChatSphere server"
+        );
 
         if (connectionStatus) {
-            connectionStatus.textContent = "🟢 Connected";
+
+            connectionStatus.textContent =
+                "🟢 Connected";
+
         }
+
     };
+
+
+    // =========================
+    // MESSAGE FROM SERVER
+    // =========================
 
     socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
 
-        console.log("📩 Server:", data);
+        const data =
+            JSON.parse(event.data);
 
-//==============================
-// server connection
-//==============================
+        console.log(
+            "📩 Server:",
+            data
+        );
 
+
+        // =========================
+        // SERVER CONNECTION
+        // =========================
 
         if (data.type === "connected") {
-            console.log("Room connected:", currentRoom);
+
+            console.log(
+                "Room connected:",
+                currentRoom
+            );
+
         }
 
-      //===========
-      // recieved message
-      // ==========
-      if(data.type ==="message"){
 
-        const message =
-          document.createElement("div");
+        // =========================
+        // RECEIVED MESSAGE
+        // =========================
 
-        message.className ="message received";
+        if (data.type === "message") {
 
-        message.textContent = data.text;
+            const message =
+                document.createElement("div");
 
-        message.apppendChild(message);
+            message.className =
+                "message received";
 
-        messsage.scrollTop =
-          messages.scrollHeight;
-        
-      }
+            message.textContent =
+                data.text;
 
-      //==================================
-      // peer left
-      //==========================
+            messages.appendChild(message);
+
+            messages.scrollTop =
+                messages.scrollHeight;
+
+        }
+
+
+        // =========================
+        // PEER LEFT
+        // =========================
+
         if (data.type === "peer-left") {
-            console.log("The other user left the room");
+
+            console.log(
+                "The other user left the room"
+            );
+
         }
+
     };
+
+
+    // =========================
+    // ERROR
+    // =========================
 
     socket.onerror = (error) => {
-        console.error("❌ WebSocket error:", error);
+
+        console.error(
+            "❌ WebSocket error:",
+            error
+        );
+
     };
+
+
+    // =========================
+    // CLOSED
+    // =========================
 
     socket.onclose = () => {
-        console.log("🔴 Server connection closed");
+
+        console.log(
+            "🔴 Server connection closed"
+        );
 
         if (connectionStatus) {
-            connectionStatus.textContent = "🔴 Disconnected";
+
+            connectionStatus.textContent =
+                "🔴 Disconnected";
+
         }
+
     };
+
 }
