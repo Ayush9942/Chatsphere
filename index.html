@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ChatSphere</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =========================
+         CONNECTION SCREEN
+    ========================== -->
+
+    <main class="app" id="connectionScreen">
+
+        <section class="welcome">
+
+            <img
+                src="logo.png"
+                alt="ChatSphere Logo"
+                class="logo"
+            >
+
+            <h1>ChatSphere</h1>
+
+            <p class="tagline">
+                Connect • Message • Share
+            </p>
+
+        </section>
+
+
+        <section class="connection-card">
+
+            <h2>Start a Connection</h2>
+
+            <button id="createRoom">
+                Create Room
+            </button>
+
+
+            <div id="roomContainer" class="room-container">
+
+                <p>Your Room Code</p>
+
+                <div class="room-code-box">
+
+                    <span id="generatedCode">
+                        ABC123
+                    </span>
+
+                    <button id="copyCode" class="copy-button">
+                        Copy
+                    </button>
+
+                </div>
+
+                <button id="enterRoom" class="enter-button">
+                    Enter Chat
+                </button>
+
+            </div>
+
+
+            <div class="divider">
+                <span>OR</span>
+            </div>
+
+
+            <input
+                type="text"
+                id="roomCode"
+                placeholder="Enter room code"
+                autocomplete="off"
+            >
+
+            <button id="joinRoom">
+                Join Room
+            </button>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         CHAT SCREEN
+    ========================== -->
+
+    <main class="chat-screen" id="chatScreen">
+
+        <!-- HEADER -->
+
+        <header class="chat-header">
+
+            <button id="backButton" class="back-button">
+                ←
+            </button>
+
+            <div class="chat-info">
+
+                <h2>ChatSphere</h2>
+
+                <span id="connectionStatus">
+                    🟢 Connected
+                </span>
+
+            </div>
+
+            <button id="roomInfoButton" class="room-info-button">
+                ⓘ
+            </button>
+
+        </header>
+
+
+        <!-- MESSAGES -->
+
+        <section
+            class="messages"
+            id="messages"
+        >
+
+            <div class="system-message">
+                You joined the room
+            </div>
+
+        </section>
+
+
+        <!-- MESSAGE INPUT -->
+
+        <footer class="message-area">
+
+            <input
+                type="text"
+                id="messageInput"
+                placeholder="Type a message..."
+                autocomplete="off"
+            >
+
+            <button
+                id="sendMessage"
+                class="send-button"
+            >
+                ➤
+            </button>
+
+        </footer>
+
+    </main>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
