@@ -151,13 +151,24 @@ backButton.addEventListener("click", () => {
 
 function send() {
 
-    const text =
-        messageInput.value.trim();
+    const text = messageInput.value.trim();
 
     if (text === "") {
         return;
     }
+// make sure websocket is connected 
+  if(!socket||socket.readyState !==WebSocket.OPEN){
+    alert("Not connected to room.");
+    return;
+  }
 
+  //send message to cloudflare worker 
+  socket.send(JSON.stringify({
+    type:"message"
+    text:text
+  }));
+
+//show message on our own screen 
 
     const message =
         document.createElement("div");
@@ -232,10 +243,37 @@ function connectToServer(roomCode) {
 
         console.log("📩 Server:", data);
 
+//==============================
+// server connection
+//==============================
+
+
         if (data.type === "connected") {
             console.log("Room connected:", currentRoom);
         }
 
+      //===========
+      // recieved message
+      // ==========
+      if(data.type ==="message"){
+
+        const message =
+          document.createElement("div");
+
+        message.className ="message received";
+
+        message.textContent = data.text;
+
+        message.apppendChild(message);
+
+        messsage.scrollTop =
+          messages.scrollHeight;
+        
+      }
+
+      //==================================
+      // peer left
+      //==========================
         if (data.type === "peer-left") {
             console.log("The other user left the room");
         }
